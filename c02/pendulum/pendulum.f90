@@ -37,7 +37,7 @@ program pendulum
     ! Solution of the movement equation using the Euler explicit method.
     time_loop: do n = 1,nm-1
         omega(n+1) = omega(n) - g/l*sin(theta(n))*dt
-        theta(n+1) = theta(n) + omega(n+1)*dt
+        theta(n+1) = theta(n) + omega(n)*dt
     enddo time_loop
 
     ! Save solution in a text file
