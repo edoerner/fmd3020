@@ -8,7 +8,7 @@ program buffon
 
     real, parameter :: l = 0.5          ! needle's length (cm)
     real, parameter :: d = 1.0          ! distance between vertical lines (cm)
-    integer, parameter :: nl = 100      ! number of throwings
+    integer, parameter :: nl = 100000      ! number of throwings
 
     real :: x               ! x coordinate of needle's center of mass (cm)
     real :: theta           ! orientation of the needle (rad) within (0, pi)

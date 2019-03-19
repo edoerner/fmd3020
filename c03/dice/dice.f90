@@ -7,7 +7,7 @@ program dice
     !
     implicit none
 
-    integer, parameter :: nsamples = 100
+    integer, parameter :: nsamples = 1000000
     integer, dimension(nsamples) :: n          ! dice throwings
 
     integer :: i
@@ -19,7 +19,7 @@ program dice
 
     do i = 1,nsamples
         call random_number(rnno)
-        n(i) = ceiling(6.0*rnno)
+        n(i) = 1 + floor(6.0*rnno)
     enddo
 
     open(unit=1, file='dice.txt')
