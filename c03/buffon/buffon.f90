@@ -3,6 +3,8 @@ program buffon
     ! Program that calculates pi using the Monte Carlo method through 
     ! Buffon's needle problem
     !
+    ! Author: Edgardo Doerner, edoerner@fis.puc.cl
+    !
 
     implicit none
 
