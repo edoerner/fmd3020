@@ -37,15 +37,15 @@ contains
 
     end subroutine prng_init
 
-    subroutine prng_get(rnno)
-        real,intent(out)  :: rnno
+    subroutine prng_get(r)
+        real,intent(out)  :: r
         real :: pi, phi
 
         pi = 4.0*atan(1.0)
-        call random_number(rnno)
+        call random_number(r)
 
-        phi = 2.0*pi*rnno
-        rnno = phi/(2.0*pi)
+        phi = 2.0*pi*r
+        r = phi/(2.0*pi)
         
     end subroutine prng_get
 
