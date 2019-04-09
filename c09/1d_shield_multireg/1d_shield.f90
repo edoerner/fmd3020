@@ -31,7 +31,7 @@ implicit none
     real :: x, u, wt
 
     ! Simulation parameters
-    integer, parameter :: nhist = 1000
+    integer, parameter :: nhist = 10000000
 
     ! Scoring variables
     real, dimension(0:nreg+1) :: score = 0.0    ! score(0) : reflection
@@ -53,7 +53,6 @@ implicit none
     write(*,'(A, I15)') 'Number of histories : ', nhist
 
     do i = 1,nreg
-        !TODO_statement
         write(*,'(A, I5, A)') 'For region ', i, ':'
         write(*,'(A, F15.5)') 'Total interaction cross-section (cm-1): ', sigma_t(i)
         write(*,'(A, F15.5)') 'Absoption interaction cross-section (cm-1): ', sigma_a(i)
@@ -82,7 +81,7 @@ implicit none
         transport_loop: do
             
             ! Distance to the next interaction.
-            pstep = mfp(sigma_t(irin))
+            pstep = mfp(sigma_t(ir))
 
             ! Check expected particle step with geometry.
             if(u .lt. 0.0) then
