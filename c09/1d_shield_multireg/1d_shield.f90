@@ -31,7 +31,7 @@ implicit none
     real :: x, u, wt
 
     ! Simulation parameters
-    integer, parameter :: nhist = 10000000
+    integer, parameter :: nhist = 100000
 
     ! Scoring variables
     real, dimension(0:nreg+1) :: score = 0.0    ! score(0) : reflection
@@ -39,8 +39,10 @@ implicit none
                                                 ! score(nreg+1) : transmission
 
     integer :: i, ihist 
-    real :: pstep   ! distance to next interaction 
-    real :: dist    ! distance to boundary along particle direction 
+    logical :: pdisc    ! flag to discard a particle
+    integer :: irnew    ! index of new region 
+    real :: pstep       ! distance to next interaction 
+    real :: dist        ! distance to boundary along particle direction
     real :: rnno 
     real :: start_time, end_time
 
@@ -76,47 +78,80 @@ implicit none
         u = uin
         wt = wtin
         ir = irin
+        
+        ! Set flag used for particle discard.
+        pdisc = .false.
 
         ! Enter transport process
-        transport_loop: do
+        photon_loop: do
             
-            ! Distance to the next interaction.
-            pstep = mfp(sigma_t(ir))
+            ptrans_loop: do
 
-            ! Check expected particle step with geometry.
-            if(u .lt. 0.0) then
-                ! The particle goes to the front face of the shield.
-                dist = (xbounds(ir) - x)/u
-
-                ! Now check if the particle leaves current region.
-                if(dist < pstep) then
-                    pstep = dist
-                    ir = ir - 1
+                ! Distance to the next interaction.
+                if(ir == 0 .or. ir == nreg+1) then
+                    ! Vacuum step
+                    pstep = 1.0E8
+                else
+                    pstep = mfp(sigma_t(ir))
                 endif
-            else if(u .gt. 0.0) then
-                ! The particle goes to the back face of the shield.
-                dist = (xbounds(ir+1) - x)/u
 
-                ! Now check if the particle leaves current region.
-                if(dist < pstep) then
-                    pstep = dist
-                    ir = ir + 1
+                ! Save particle current region.
+                irnew = ir
+
+                ! Check expected particle step with geometry.
+                if(u .lt. 0.0) then
+                    ! The particle goes to the front face of the shield.
+                    dist = (xbounds(ir) - x)/u
+
+                    ! Now check if the particle leaves current region.
+                    if(dist < pstep) then
+                        pstep = dist
+                        if(irnew == 0) then
+                            ! The particle is leaving the geometry, discard it.
+                            pdisc = .true.
+                        else
+                            irnew = irnew - 1
+                        endif
+                    endif
+                else if(u .gt. 0.0) then
+                    ! The particle goes to the back face of the shield.
+                    dist = (xbounds(ir+1) - x)/u
+
+                    ! Now check if the particle leaves current region.
+                    if(dist < pstep) then
+                        pstep = dist
+                        if(irnew == nreg+1) then
+                            ! The particle is leaving the geometry, discard it.
+                            pdisc = .true.
+                        else
+                            irnew = irnew + 1
+                        endif
+                    endif
                 endif
-            endif
 
-            ! Check if the particle left the geometry.
-            if(ir == 0) then
-                ! The particle was reflected.
+                ! Check if particle has been discarded.
+                if(pdisc .eqv. .true.) then
+                    exit
+                endif
+
+                ! Update position of particle.
+                x = x + pstep*u
+
+                ! Reached this point, if the particle has not changed region, it must interact.
+                if(ir == irnew) then
+                    exit
+                else
+                    ! Update particle region index and continue transport process.
+                    ir = irnew
+                endif
+
+            enddo ptrans_loop    
+            
+            if(pdisc .eqv. .true.) then
+                ! The particle has been discarded. Score it and end tracking.
                 score(ir) = score(ir) + wt
                 exit
-            else if(ir == nreg+1) then
-                ! The particle was transmitted.
-                score(ir) = score(ir) + wt
-                exit
             endif
-
-            ! Update position of particle.
-            x = x + pstep*u
 
             ! Determine interaction type.
             rnno = rng_set()
@@ -125,11 +160,12 @@ implicit none
                 score(ir) = score(ir) + wt
                 exit
             else
-                ! The particle was scattered, get new direction.
+                ! The particle was scattered, get new direction to re-enter transport loop.
                 u = scatt(u)
             endif
             
-        enddo transport_loop
+        enddo photon_loop
+
     enddo ihist_loop
 
     ! Print results to console
