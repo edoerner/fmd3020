@@ -83,7 +83,7 @@ implicit none
         pdisc = .false.
 
         ! Enter transport process
-        photon_loop: do
+        particle_loop: do
             
             ptrans_loop: do
 
@@ -100,33 +100,35 @@ implicit none
 
                 ! Check expected particle step with geometry.
                 if(u .lt. 0.0) then
-                    ! The particle goes to the front face of the shield.
-                    dist = (xbounds(ir) - x)/u
+                    if(irnew == 0) then
+                        ! The particle is leaving the geometry, discard it.
+                        pdisc = .true.
+                    else
+                        ! The particle goes to the front face of the shield.
+                        dist = (xbounds(ir) - x)/u
 
-                    ! Now check if the particle leaves current region.
-                    if(dist < pstep) then
-                        pstep = dist
-                        if(irnew == 0) then
-                            ! The particle is leaving the geometry, discard it.
-                            pdisc = .true.
-                        else
-                            irnew = irnew - 1
+                        ! Now check if the particle leaves current region.
+                        if(dist < pstep) then
+                        pstep = dist                      
+                        irnew = irnew - 1
                         endif
                     endif
+                    
                 else if(u .gt. 0.0) then
-                    ! The particle goes to the back face of the shield.
-                    dist = (xbounds(ir+1) - x)/u
+                    if(irnew == nreg+1) then
+                        ! The particle is leaving the geometry, discard it.
+                        pdisc = .true.
+                    else
+                        ! The particle goes to the back face of the shield.
+                        dist = (xbounds(ir+1) - x)/u
 
-                    ! Now check if the particle leaves current region.
-                    if(dist < pstep) then
-                        pstep = dist
-                        if(irnew == nreg+1) then
-                            ! The particle is leaving the geometry, discard it.
-                            pdisc = .true.
-                        else
+                        ! Now check if the particle leaves current region.
+                        if(dist < pstep) then
+                            pstep = dist
                             irnew = irnew + 1
                         endif
                     endif
+                    
                 endif
 
                 ! Check if particle has been discarded.
@@ -164,7 +166,7 @@ implicit none
                 u = scatt(u)
             endif
             
-        enddo photon_loop
+        enddo particle_loop
 
     enddo ihist_loop
 
