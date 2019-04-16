@@ -196,12 +196,14 @@ implicit none
     unc_score = unc_score/nperbatch
 
     ! Print results to console.
-    write(*,'(A,F15.5,A,F15.5,A)') 'Reflection : ', mean_score(0), ' +/-', 100*unc_score(0)/mean_score(0), '%'
+    write(*,'(A,F15.5,A,F15.5,A)') 'Reflection : ', mean_score(0), ' +/-', &
+        100*unc_score(0)/mean_score(0), '%'
 
     ! To calculate the uncertainty of the absorption we need to combine the uncertainty of the deposition 
     ! in each region.
     write(*,'(A,F15.5,A,F15.5,A)') 'Absorption : ', sum(mean_score(1:nreg)), ' +/-', &
         100*sqrt(sum(unc_score(1:nreg)**2))/sum(mean_score(1:nreg)), '%'
+    
     write(*,'(A,F15.5,A,F15.5,A)') 'Transmission : ', mean_score(nreg+1), ' +/-', &
         100*unc_score(nreg+1)/mean_score(nreg+1), '%'
 
