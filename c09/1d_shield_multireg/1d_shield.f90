@@ -109,8 +109,8 @@ implicit none
 
                         ! Now check if the particle leaves current region.
                         if(dist < pstep) then
-                        pstep = dist                      
-                        irnew = irnew - 1
+                            pstep = dist                      
+                            irnew = irnew - 1
                         endif
                     endif
                     
