@@ -31,9 +31,9 @@ implicit none
     real :: x, u, wt
 
     ! Simulation parameters
-    integer, parameter :: nhist = 100000        ! number of simulated histories
-    integer, parameter :: nbatch = 10           ! number of statistical batches
-    integer :: nperbatch = nhist/nbatch
+    integer, parameter :: nperbatch = 500    
+    integer, parameter :: nbatch = 10               ! number of statistical batches
+    integer, parameter :: nhist = nbatch*nperbatch  ! number of simulated histories
 
     ! Scoring variables
     real, dimension(0:nreg+1, nbatch) :: score = 0.0    ! score(0) : reflection
