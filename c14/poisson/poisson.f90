@@ -9,15 +9,15 @@ program poisson_dist
 
     implicit none
 
-    integer(kind=int32), parameter :: nexp = 20 ! number of experiments
-    real(kind=real64) :: mean = 10 ! mean value for the Poisson distribution
+    integer(kind=int32), parameter :: nexp = 30 ! number of experiments
+    real(kind=real64) :: mean = 10   ! mean value for the Poisson distribution
 
     real(kind=real64), dimension(0:nexp) :: pdf = 0.0  ! pdf
     real(kind=real64), dimension(0:nexp) :: cdf = 0.0  ! cdf
 
     integer(kind=int32) :: i
     
-    write(*,'(A,F10.2,A,I5)') 'Poisson distribution for m = ', mean, &
+    write(*,'(A,F10.2,A,I10)') 'Poisson distribution for m = ', mean, &
         ' and N = ', nexp
 
     ! Calculate the functions values for zero success.

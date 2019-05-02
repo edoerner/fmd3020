@@ -10,7 +10,7 @@ program binomial
 
     implicit none
 
-    integer(kind=int32), parameter :: nexp = 20 ! number of experiments
+    integer(kind=int32), parameter :: nexp = 100 ! number of experiments
     real(kind=real64), parameter :: p = 0.7      ! probabily of success
 
     real(kind=real64), dimension(0:nexp) :: pdf = 0.0  ! pdf

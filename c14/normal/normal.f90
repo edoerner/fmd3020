@@ -9,7 +9,7 @@ program normal_dist
 
     implicit none
 
-    integer(kind=int32), parameter :: nexp = 20 ! number of experiments
+    integer(kind=int32), parameter :: nexp = 30 ! number of experiments
     real(kind=real64) :: mean = 10  ! mean of the normal distribution
     real(kind=real64) :: var = 10   ! variance of the normal distribution
 
