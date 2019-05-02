@@ -59,6 +59,9 @@ program dice_sampling
     score2 = sum((sum_score/nperbatch - score)**2)/(nbatch-1)
     write(unit=6, fmt='(A, F10.5, A, F10.5)') 'sample mean = ', score, &
             ', sample variance = ', score2
+
+    write(unit=6, fmt='(A, F10.5, A, F10.5)') 'standard deviation of the mean = ', &
+            sqrt(score2/nbatch) 
     
     
     contains
