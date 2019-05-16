@@ -5,6 +5,8 @@ program shield_1d
     !
     ! Author: Edgardo Doerner, edoerner@fis.puc.cl
     !
+    use iso_fortran_env, only: int32, real64
+
     use mod_rng
     use mod_mfp
     use mod_scatt
@@ -12,44 +14,45 @@ program shield_1d
 implicit none
 
     ! Geometry parameters
-    integer, parameter :: nreg = 1              ! number of region in the 1D shield
-    real, dimension(nreg) :: xthick = (/10.0/)  ! thickness of the 1D shield (cm)
-    real, dimension(nreg+1) :: xbounds = 0.0    ! boundaries of the shield regions (cm)
+    integer(kind=int32), parameter :: nreg = 1              ! number of region in the 1D shield
+    real(kind=real64), dimension(nreg) :: xthick = (/10.0/)  ! thickness of the 1D shield (cm)
+    real(kind=real64), dimension(nreg+1) :: xbounds = 0.0    ! boundaries of the shield regions (cm)
 
     ! Transport parameters
-    real, dimension(nreg) :: sigma_t = (/1.0/)  ! Total interaction cross section (cm-1)
-    real, dimension(nreg) :: sigma_a = (/0.8/)  ! Absorption cross section (cm-1)
-    real, dimension(nreg) :: sigma_s = (/0.2/)  ! Scattering cross section (cm-1)
+    real(kind=real64), dimension(nreg) :: sigma_t = (/1.0/)  ! Total interaction cross section (cm-1)
+    real(kind=real64), dimension(nreg) :: sigma_a = (/0.8/)  ! Absorption cross section (cm-1)
+    real(kind=real64), dimension(nreg) :: sigma_s = (/0.2/)  ! Scattering cross section (cm-1)
 
     ! Particle parameters
-    real, parameter :: xin = 0.0    ! initial position (cm)
-    real, parameter :: uin = 1.0    ! initial direction
-    real, parameter :: wtin = 1.0   ! statistical weight
-    integer, parameter :: irin = 1  ! initial region
+    real(kind=real64), parameter :: xin = 0.0    ! initial position (cm)
+    real(kind=real64), parameter :: uin = 1.0    ! initial direction
+    real(kind=real64), parameter :: wtin = 1.0   ! statistical weight
+    integer(kind=int32), parameter :: irin = 1  ! initial region
 
-    integer :: ir
-    real :: x, u, wt
+    integer(kind=int32) :: ir
+    real(kind=real64) :: x, u, wt
 
     ! Simulation parameters
-    integer, parameter :: nperbatch = 1E6    
-    integer, parameter :: nbatch = 10               ! number of statistical batches
-    integer, parameter :: nhist = nbatch*nperbatch  ! number of simulated histories
+    integer(kind=int32), parameter :: nperbatch = 1E6    
+    integer(kind=int32), parameter :: nbatch = 10               ! number of statistical batches
+    integer(kind=int32), parameter :: nhist = nbatch*nperbatch  ! number of simulated histories
 
     ! Scoring variables
-    real, dimension(0:nreg+1) :: score, score2 = 0.0    ! score(0) : reflection
+    real(kind=real64), dimension(0:nreg+1) :: score, score2 = 0.0    ! score(0) : reflection
                                                         ! score(1:nreg) : absorption
                                                         ! score(nreg+1) : transmission
 
-    real, dimension(0:nreg+1) :: mean_score = 0.0   ! mean value of scoring array
-    real, dimension(0:nreg+1) :: unc_score = 0.0    ! uncertainty values of scoring array
+    real(kind=real64), dimension(0:nreg+1) :: mean_score = 0.0   ! mean value of scoring array
+    real(kind=real64), dimension(0:nreg+1) :: unc_score = 0.0    ! uncertainty values of scoring array
 
-    integer :: i, ihist, ibatch     ! loop counters 
+    integer(kind=int32) :: i, ihist, ibatch     ! loop counters 
     logical :: pdisc                ! flag to discard a particle
-    integer :: irnew                ! index of new region 
-    real :: pstep                   ! distance to next interaction 
-    real :: dist                    ! distance to boundary along particle direction
-    real :: rnno 
-    real :: start_time, end_time
+    integer(kind=int32) :: irnew                ! index of new region 
+    real(kind=real64) :: pstep                   ! distance to next interaction 
+    real(kind=real64) :: dist                    ! distance to boundary along particle direction
+    real(kind=real64) :: rnno 
+    real(kind=real64) :: max_var, fom
+    real(kind=real64) :: start_time, end_time
 
     call cpu_time(start_time)
 
@@ -187,21 +190,31 @@ implicit none
 
     ! Statistical procesing
     mean_score = mean_score/nbatch
-    unc_score = (unc_score - nbatch*mean_score)/(nbatch-1)
+    unc_score = (unc_score - nbatch*mean_score**2)/(nbatch-1)
     unc_score = unc_score/nbatch
     unc_score = sqrt(unc_score)
 
+    ! Calculate relative uncertainty, to be used for the FOM.
+    unc_score = unc_score/mean_score
+
     ! Print results to console.
-    write(*,'(A,F10.5,A,F10.5)') 'Reflection : ', mean_score(0)/nperbatch, ' +/-', unc_score(0)/nperbatch
+    write(*,'(A,F10.5,A,F10.5,A)') 'Reflection : ', mean_score(0)/nperbatch, ' +/-', 100.0*unc_score(0), '%'
 
     ! To calculate the uncertainty of the absorption we need to combine the uncertainty of the deposition 
     ! in each region.
-    write(*,'(A,F10.5,A,F10.5)') 'Absorption : ', sum(mean_score(1:nreg))/nperbatch, ' +/-', sum(unc_score(1:nreg))/nperbatch
+    write(*,'(A,F10.5,A,F10.5,A)') 'Absorption : ', sum(mean_score(1:nreg))/nperbatch, ' +/-', & 
+        100.0*sum(unc_score(1:nreg)), '%'
     
-    write(*,'(A,F10.5,A,F10.5)') 'Transmission : ', mean_score(nreg+1)/nperbatch, ' +/-', unc_score(nreg+1)/nperbatch
+    write(*,'(A,F10.5,A,F10.5,A)') 'Transmission : ', mean_score(nreg+1)/nperbatch, ' +/-', &
+        100.0*unc_score(nreg+1), '%'
 
     ! Get elapsed time
     call cpu_time(end_time)
     write(*,'(A,F15.5)') 'Elapsed time (s) : ', end_time - start_time
+
+    ! Now calculate figure of merit.
+    max_var = maxval(unc_score)
+    fom = 1.0/(max_var**2*(end_time - start_time))
+    write(*,'(A,F15.5)') 'Figure of merit (FOM) : ', fom
 
 end program shield_1d

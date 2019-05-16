@@ -3,21 +3,23 @@ module mod_scatt
     ! This module handles the calculation of the new direction of a particle that suffers 
     ! a scattering process.
     !
+    use iso_fortran_env, only: int32, real64
+
     use mod_rng
 implicit none
 
 contains
 
-    real function scatt(uin)
+    real(kind=real64) function scatt(uin)
         !
         ! This function samples the scattering angle and determines the new direction 
         ! of a particle that suffers a scattering process. Isotropic scattering.
         !
-        real, intent(in) :: uin ! direction of the particle before interaction
-        real :: u0, phi0        ! scattering angles
-        real :: rnno, pi
+        real(kind=real64), intent(in) :: uin ! direction of the particle before interaction
+        real(kind=real64) :: u0, phi0        ! scattering angles
+        real(kind=real64) :: rnno, pi
 
-        pi = 4.0*atan(1.0)
+        pi = 4.0_real64*atan(1.0_real64)
 
         ! First sample polar angle (as directional cosine).
         rnno = rng_set()

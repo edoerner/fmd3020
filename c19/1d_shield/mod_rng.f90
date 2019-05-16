@@ -2,20 +2,22 @@ module mod_rng
     !
     ! Definition of the pseudo-random number generator. Fortran intrinsic RNG.
     !
+    use iso_fortran_env, only: int32, real64
+
 implicit none
 
 contains
 
     subroutine rng_init(seed)
         ! Initialize the rng. Obtained from https://stackoverflow.com/a/51898794/10919904
-        integer,intent(in)  :: seed
+        integer(kind=int32), intent(in)  :: seed
         
-        integer, parameter :: wp = selected_real_kind(15,307)
-        integer, parameter :: n_discard = 100
+        integer(kind=int32), parameter :: wp = selected_real_kind(15,307)
+        integer(kind=int32), parameter :: n_discard = 100
 
-        integer :: state_size, i
-        integer, allocatable, dimension(:) :: state
-        real(wp) :: ran, oldran
+        integer(kind=int32) :: state_size, i
+        integer(kind=int32), allocatable, dimension(:) :: state
+        real(kind=real64), dimension(wp) :: ran, oldran
 
         call random_seed( size=state_size )
         write(*,*) 'Initializing intrinsic PRNG -- state size is: ', state_size
@@ -38,7 +40,7 @@ contains
 
     end subroutine rng_init
 
-    real function rng_set()
+    real(kind=real64) function rng_set()
     
         call random_number(rng_set)
         
