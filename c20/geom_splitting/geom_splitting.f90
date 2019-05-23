@@ -188,6 +188,9 @@ implicit none
                     if(ip .eq. 0) then
                         ! Finish particle history.
                         exit
+                    else
+                        ! Start transport of the next particle.
+                        cycle
                     endif
                 endif
 
@@ -201,6 +204,9 @@ implicit none
                     if(ip .eq. 0) then
                         ! Finish particle history.
                         exit
+                    else
+                        ! Start transport of the next particle.
+                        cycle
                     endif                   
                 else
                     ! The particle was scattered, get new direction to re-enter transport loop.

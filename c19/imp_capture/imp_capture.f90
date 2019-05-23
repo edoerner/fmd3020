@@ -187,7 +187,7 @@ implicit none
                     if(wt .le. rr_cut) then
                         rnno = rng_set()
                         if(rnno .gt. 1.0/rr_d) then
-                            ! particle does not survice, finish history
+                            ! particle does not survive, finish history
                             exit
                         else
                             ! particle survives, adjusts weight accordingly and continue transport.
