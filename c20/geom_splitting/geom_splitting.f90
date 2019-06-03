@@ -37,7 +37,7 @@ implicit none
     real(kind=real64), dimension(nstack) :: x, u, wt
 
     ! Geometrical splitting VRT parameters
-    real(kind=real64), parameter :: gs_r = 2.63     ! ratio of region importances.
+    real(kind=real64) :: gs_r = 2.63                ! ratio of region importances.
     integer(kind=int32) :: gs_n                     ! integer part of gs_r
     real(kind=real64), dimension(nreg) :: gs_i      ! importance of each region
     
@@ -174,6 +174,34 @@ implicit none
                     if(ir(ip) == irnew) then
                         exit
                     else
+                        ! Implementation of geometrical splitting VRT.
+                        gs_r = gs_i(irnew)/gs_i(ir(ip))
+
+                        if(gs_r > 1.0) then
+                            ! Particle is going to the ROI. Perform particle splitting.
+                            gs_n = floor(gs_r)
+                            rnno = rng_set()
+
+                            if(rnno .le. 1.0 - (gs_r - gs_n)) then
+                                ! Divide the particle in n particles
+
+                            else
+                                ! Divide the particle in n+1 particles
+
+                            endif
+                        else
+                            ! Particle is going backwards the ROI. Perform russian roulette.
+                            rnno = rng_set()
+                            if(rnno .gt. gs_r) then
+                                ! particle does not survive, finish particle
+                                ip = ip - 1
+                                cycle
+                            else
+                                ! particle survives, adjusts weight accordingly and continue transport.
+                                wt(ip) = (1.0/gs_r)*wt(ip)                        
+                            endif
+                        endif
+                        
                         ! Update particle region index and continue transport process.
                         ir(ip) = irnew
                     endif
