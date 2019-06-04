@@ -11,7 +11,7 @@ program serial_sum
 implicit none
 
     integer(kind=int64), parameter :: nsize = 100000 ! size of the array
-    integer(kind=int64), dimension(nsize) :: a = 0  ! array whose elements will be added
+    integer(kind=int64), allocatable :: a(:)  ! array whose elements will be added
 
     real(kind=real64) :: start_time, end_time
     real(kind=real64) :: res = 0.0
