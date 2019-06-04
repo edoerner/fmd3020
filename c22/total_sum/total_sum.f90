@@ -16,7 +16,7 @@ implicit none
     integer(kind=int64), allocatable :: a(:)            ! array whose elements will be added
     integer(kind=int64) :: local_size
 
-    real(kind=real64) :: start_time, end_time
+    real(kind=real64) :: start_time, end_time, rend_time
 
     real(kind=real64) :: local_res, total_res = 0
     integer(kind=int64) :: i, istart, iend, rest
@@ -54,6 +54,8 @@ implicit none
 
     write(6,'(A, I10)') 'Array : a(i) = i**2, i = ', istart, ', ', iend
 
+    call mpi_barrier(MPI_COMM_WORLD, ierr)
+
     ! Allocate and initialize array.
     a = [(i**2, i=istart,iend)]
 
@@ -68,12 +70,18 @@ implicit none
         0, MPI_COMM_WORLD, ierr)
 
     if (mpi_rank .eq. 0) then
+        write(6,'(A)') '*******************************************************'
         write(6,'(A, F20.1)') 'Total sum of array elements = ', total_res
     endif
 
     ! Get elapsed time
     end_time = mpi_wtime()
-    write(*,'(A,F15.5)') 'Elapsed time (s) : ', end_time - start_time
+    call mpi_reduce(end_time, rend_time, 1, MPI_DOUBLE_PRECISION, MPI_MAX, &
+        0, MPI_COMM_WORLD, ierr)
+    
+    if(mpi_rank .eq. 0) then
+        write(*,'(A,F15.5)') 'Elapsed time (s) : ', rend_time - start_time
+    endif
 
     call mpi_finalize(ierr)
 
