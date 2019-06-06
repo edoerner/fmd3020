@@ -250,7 +250,7 @@ implicit none
 
         ! Now calculate figure of merit.
         max_var = maxval(r_unc_score)
-        fom = 1.0/(max_var**2*(end_time - start_time))
+        fom = 1.0/(max_var**2*(r_end_time - start_time))
         write(*,'(A,F15.5)') 'Figure of merit (FOM) : ', fom
     endif    
 
